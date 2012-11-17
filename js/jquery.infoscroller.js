@@ -60,7 +60,7 @@
 
 					$(window).scroll(function (e) {
 						var st = $(this).scrollTop(),
-							percentage = st / canvasHeight,
+							percentage = st / (canvasHeight - $(window).height()),
 							overflowOffset = overflow * percentage;
 
 						$('.scroller__canvas').css({
