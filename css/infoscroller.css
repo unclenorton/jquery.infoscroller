@@ -19,8 +19,22 @@ body {
 	right: 0;
 }
 
+.scroller__canvas {
+	position: relative;
+	width: 100%;
+	height: auto;
+}
+
 .scroller__canvas canvas{
 	position: relative;
 	width: 100%;
 	height: auto;
+}
+
+.scroller__handle {
+	position: absolute;
+	width: 100%;
+	top: 0;
+	background: rgba(255,0,0,0.3);
+	z-index: 5;
 }

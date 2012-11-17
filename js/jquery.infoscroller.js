@@ -40,7 +40,39 @@
 				   to append it to the page call for example 
 				   document.body.appendChild( canvas );
 				*/
+					
+					var canvasHeight = $(canvas).attr('height'),
+						canvasWidth = $(canvas).attr('width'),
+						scaledCanvasHeight = canvasHeight * (150 / canvasWidth),
+						overflow = scaledCanvasHeight - $(window).height(),
+						ratio = scaledCanvasHeight / canvasHeight;
+					
+					// Ensure the positive overflow
+					overflow = (overflow > 0) ? overflow : 0;
+
+					$(canvas).css({
+						width : 150,
+						height : scaledCanvasHeight
+					});
+
 					$('.scroller__canvas').append($(canvas));
+					$('.scroller__handle').height($(window).height() * ratio);
+
+					$(window).scroll(function (e) {
+						var st = $(this).scrollTop(),
+							percentage = st / canvasHeight,
+							overflowOffset = overflow * percentage;
+
+						$('.scroller__canvas').css({
+							'margin-top' : -overflowOffset
+						});
+
+						$('.scroller__handle').css({
+							top : st * ratio - overflowOffset
+						});
+
+						
+					});
 				}
 			});
 		});
