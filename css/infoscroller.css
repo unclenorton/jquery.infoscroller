@@ -17,6 +17,11 @@ body {
 	height: 100%;
 	top: 0;
 	right: 0;
+	background: transparent url('ajax-loader.gif') center center no-repeat scroll;
+}
+
+.scroller.loaded {
+	background: none;
 }
 
 .scroller__canvas {

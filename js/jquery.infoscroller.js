@@ -36,11 +36,9 @@
 			console.log($(this));
 			html2canvas( [this], {
 				onrendered: function( canvas ) {
-				/* canvas is the actual canvas element, 
-				   to append it to the page call for example 
-				   document.body.appendChild( canvas );
-				*/
-					
+
+					$('.scroller').addClass('loaded');
+
 					var canvasHeight = $(canvas).attr('height'),
 						canvasWidth = $(canvas).attr('width'),
 						scaledCanvasHeight = canvasHeight * (150 / canvasWidth),
