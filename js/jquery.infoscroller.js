@@ -32,22 +32,28 @@
 		conf = $.extend($.infoscroller.conf, conf);
 		$.infoscroller.workingConf = conf;
 
+		$.infoscroller.wHeight = $(window).height();
+
 		this.each(function(i) {
-			console.log($(this));
 			html2canvas( [this], {
 				simplifyText : true,
+				allowTaint : false,
+				svgRendering : true,
 				onrendered: function( canvas ) {
 
 					$('.scroller').addClass('loaded');
 
-					var canvasHeight = $(canvas).attr('height'),
-						canvasWidth = $(canvas).attr('width'),
-						scaledCanvasHeight = canvasHeight * (150 / canvasWidth),
-						overflow = scaledCanvasHeight - $(window).height(),
-						ratio = scaledCanvasHeight / canvasHeight;
+					$.infoscroller.canvasHeight = $(canvas).attr('height');
+					$.infoscroller.canvasWidth = $(canvas).attr('width');
+
+					var	scaledCanvasHeight = $.infoscroller.canvasHeight * (150 / $.infoscroller.canvasWidth),
+						overflow = scaledCanvasHeight - $.infoscroller.wHeight,
+						ratio = scaledCanvasHeight / $.infoscroller.canvasHeight;
+
+					$.infoscroller.ratio = ratio;
 					
 					// Ensure the positive overflow
-					overflow = (overflow > 0) ? overflow : 0;
+					$.infoscroller.overflow = (overflow > 0) ? overflow : 0;
 
 					$(canvas).css({
 						width : 150,
@@ -55,26 +61,60 @@
 					});
 
 					$('.scroller__canvas').append($(canvas));
-					$('.scroller__handle').height($(window).height() * ratio);
+					$('.scroller__handle')
+						.height($.infoscroller.wHeight * ratio)
+						.on('mousedown', startDrag);
 
-					$(window).scroll(function (e) {
-						var st = $(this).scrollTop(),
-							percentage = st / (canvasHeight - $(window).height()),
-							overflowOffset = overflow * percentage;
-
-						$('.scroller__canvas').css({
-							'margin-top' : -overflowOffset
-						});
-
-						$('.scroller__handle').css({
-							top : st * ratio - overflowOffset
-						});
-
-						
-					});
+					$(window).scroll(onScroll);
 				}
 			});
 		});
+
+		function setHandlePosition (percentage, scrollTop) {
+			var overflowOffset = $.infoscroller.overflow * percentage;
+
+			$('.scroller__canvas').css({
+				'margin-top' : -overflowOffset
+			});
+
+			$('.scroller__handle').css({
+				top : scrollTop * $.infoscroller.ratio - overflowOffset
+			});
+		}
+
+		function startDrag(e) {
+			$.infoscroller.startY = e.clientY;
+			$.infoscroller.handleStartY = $('.scroller__handle').position().top;
+			$('html').on('mousemove', onDrag);
+			$('html').on('mouseup', endDrag);
+		}
+
+		function onDrag(e) {
+			
+			// Get offset
+			var offset = e.clientY - $.infoscroller.startY,
+				handlePos = $.infoscroller.handleStartY + offset,
+				percentage = handlePos / ($.infoscroller.wHeight * (1 - $.infoscroller.ratio)),
+				overflowOffset = $.infoscroller.overflow * percentage;
+
+			handlePos = (handlePos > 0) ? handlePos : 0;
+			// $('.scroller__handle').css({
+			// 	top : handlePos
+			// });
+
+			$(window).scrollTop((handlePos + overflowOffset) / $.infoscroller.ratio);
+		}
+
+		function onScroll(e) {
+			// Get percentage
+			var st = $(this).scrollTop(),
+				percentage = st / ($.infoscroller.canvasHeight - $.infoscroller.wHeight);
+			setHandlePosition(percentage, st);
+		}
+
+		function endDrag() {
+			$('html').off('mousemove', onDrag);
+		}
 
 		return this;
 	};
