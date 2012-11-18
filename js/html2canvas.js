@@ -2847,7 +2847,17 @@ _html2canvas.Renderer.Canvas = function( options ) {
                     newCanvas.height = bounds.height;
                     ctx = newCanvas.getContext("2d");
 
-                    ctx.drawImage( canvas, bounds.left, bounds.top, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height );
+                    // If the image is too large, draw it in multiple passes
+                    if (bounds.height < 100600) {
+                        ctx.drawImage( canvas, bounds.left, bounds.top, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height );
+                    } else {
+                        var passes = Math.ceil(bounds.height / 1600);
+                        for (var i = 0; i < passes; i++) {
+                            var h = (i < passes - 1) ? 1600 : (bounds.height - i * 1600);
+                            ctx.drawImage( canvas, bounds.left, bounds.top + i*1600, bounds.width, h, 0, bounds.top + i*1600, bounds.width, h );
+                        }
+                    }
+                    
                     canvas = null;
                     return newCanvas;
                 }
