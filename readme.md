@@ -1,5 +1,6 @@
 # jQuery Infoscroller
 
+A Sublime Text 2 - style page scrollbar with minimap. Uses the awesome html2canvas library by Niklas von Hertzen (http://html2canvas.hertzen.com)
 
 # License
 
