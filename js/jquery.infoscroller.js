@@ -35,6 +35,7 @@
 		this.each(function(i) {
 			console.log($(this));
 			html2canvas( [this], {
+				simplifyText : true,
 				onrendered: function( canvas ) {
 
 					$('.scroller').addClass('loaded');
