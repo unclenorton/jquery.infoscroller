@@ -2848,7 +2848,7 @@ _html2canvas.Renderer.Canvas = function( options ) {
                     ctx = newCanvas.getContext("2d");
 
                     // If the image is too large, draw it in multiple passes
-                    if (bounds.height < 100600) {
+                    if (bounds.height < 1600) {
                         ctx.drawImage( canvas, bounds.left, bounds.top, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height );
                     } else {
                         var passes = Math.ceil(bounds.height / 1600);
