@@ -3,6 +3,22 @@ body {
 	font: 87.45%/1.4 "Helvetica Neue", Arial, sans-serif;
 }
 
+.g-unselectable {
+	.g-unselectable{
+	-ms-user-select: none;
+	-moz-user-select:none;
+	-webkit-user-select:none;
+	user-select: none;
+	behavior: expression(
+		( this.onselectstart = function(){ return !(1+(' ' + this.className + ' ').indexOf(' unselectable ')) } ),
+		( this.style.behavior = null )
+	);
+}
+
+/* Opera */
+.g-unselectable::selection { color: inherit } 
+}
+
 /* Collapsible item container */
 .text {
 	width: 600px;
@@ -43,4 +59,5 @@ body {
 	top: 0;
 	background: rgba(255,0,0,0.3);
 	z-index: 5;
+	cursor: move !important;
 }
