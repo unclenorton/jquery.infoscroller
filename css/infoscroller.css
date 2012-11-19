@@ -4,11 +4,13 @@ body {
 }
 
 .g-unselectable {
-	.g-unselectable{
 	-ms-user-select: none;
-	-moz-user-select:none;
+	-moz-user-select: none;
 	-webkit-user-select:none;
 	user-select: none;
+}
+
+.lte-ie8 .g-unselectable {
 	behavior: expression(
 		( this.onselectstart = function(){ return !(1+(' ' + this.className + ' ').indexOf(' unselectable ')) } ),
 		( this.style.behavior = null )
@@ -17,7 +19,6 @@ body {
 
 /* Opera */
 .g-unselectable::selection { color: inherit } 
-}
 
 /* Collapsible item container */
 .text {
