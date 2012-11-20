@@ -85,8 +85,9 @@
 		function startDrag(e) {
 			$.infoscroller.startY = e.clientY;
 			$.infoscroller.handleStartY = $('.scroller__handle').position().top;
-			$('html').on('mousemove', onDrag);
-			$('html').on('mouseup', endDrag);
+			$('html').on('mousemove', onDrag)
+					.on('mouseup', endDrag)
+					.addClass('g-unselectable');
 		}
 
 		function onDrag(e) {
@@ -98,9 +99,6 @@
 				overflowOffset = $.infoscroller.overflow * percentage;
 
 			handlePos = (handlePos > 0) ? handlePos : 0;
-			// $('.scroller__handle').css({
-			// 	top : handlePos
-			// });
 
 			$(window).scrollTop((handlePos + overflowOffset) / $.infoscroller.ratio);
 		}
@@ -113,7 +111,7 @@
 		}
 
 		function endDrag() {
-			$('html').off('mousemove', onDrag);
+			$('html').off('mousemove', onDrag).removeClass('g-unselectable');
 		}
 
 		return this;
