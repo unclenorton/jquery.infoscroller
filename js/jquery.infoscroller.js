@@ -33,28 +33,30 @@
 		$.infoscroller.workingConf = conf;
 
 		$.infoscroller.wHeight = $(window).height();
+		$.infoscroller.canvasHeight = $(this).outerHeight();
+		$.infoscroller.canvasWidth = $(this).outerWidth();
+
+		var	scaledCanvasHeight = Math.floor($.infoscroller.canvasHeight * (150 / $.infoscroller.canvasWidth)),
+			overflow = scaledCanvasHeight - $.infoscroller.wHeight,
+			ratio = scaledCanvasHeight / $.infoscroller.canvasHeight;
+
+		$.infoscroller.ratio = ratio;
+		console.log($.infoscroller.canvasHeight);
+		// Ensure the positive overflow
+		$.infoscroller.overflow = (overflow > 0) ? overflow : 0;
 
 		this.each(function(i) {
 			html2canvas( [this], {
 				simplifyText : true,
 				allowTaint : false,
-				svgRendering : true,
+				width : 150 / ratio, // Ratio matters when visualizing part of the page
+				height: scaledCanvasHeight,
+				scale : ratio,
 				onrendered: function( canvas ) {
 
 					$('.scroller').addClass('loaded');
 
-					$.infoscroller.canvasHeight = $(canvas).attr('height');
-					$.infoscroller.canvasWidth = $(canvas).attr('width');
-
-					var	scaledCanvasHeight = $.infoscroller.canvasHeight * (150 / $.infoscroller.canvasWidth),
-						overflow = scaledCanvasHeight - $.infoscroller.wHeight,
-						ratio = scaledCanvasHeight / $.infoscroller.canvasHeight;
-
-					$.infoscroller.ratio = ratio;
-					
-					// Ensure the positive overflow
-					$.infoscroller.overflow = (overflow > 0) ? overflow : 0;
-
+					// IE fix
 					$(canvas).css({
 						width : 150,
 						height : scaledCanvasHeight
