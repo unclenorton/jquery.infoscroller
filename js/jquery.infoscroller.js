@@ -88,7 +88,7 @@
 			$.infoscroller.startY = e.clientY;
 			$.infoscroller.handleStartY = $('.scroller__handle').position().top;
 			$('html').on('mousemove', onDrag)
-					.on('mouseup', endDrag)
+					.on('mouseup mouseleave', endDrag)
 					.addClass('g-unselectable');
 		}
 
