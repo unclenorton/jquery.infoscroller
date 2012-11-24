@@ -47,25 +47,24 @@ _html2canvas.Util.backgroundImage = function (src) {
     return src;
 };
 
-_html2canvas.Util.Bounds = function getBounds (el) {
+_html2canvas.Util.Bounds = function getBounds (el, scale) {
     var clientRect,
+    scale = scale || 1,
     bounds = {};
-
     if (el.getBoundingClientRect){
         clientRect = el.getBoundingClientRect();
 
 
         // TODO add scroll position to bounds, so no scrolling of window necessary
-        bounds.top = clientRect.top;
-        bounds.bottom = clientRect.bottom || (clientRect.top + clientRect.height);
-        bounds.left = clientRect.left;
+        bounds.top = Math.round(clientRect.top * scale);
+        bounds.bottom = Math.round(clientRect.bottom * scale || (clientRect.top + clientRect.height) * scale);
+        bounds.left = Math.round(clientRect.left * scale);
 
         // older IE doesn't have width/height, but top/bottom instead
-        bounds.width = clientRect.width || (clientRect.right - clientRect.left);
-        bounds.height = clientRect.height || (clientRect.bottom - clientRect.top);
+        bounds.width = Math.round(clientRect.width * scale || (clientRect.right - clientRect.left) * scale);
+        bounds.height = Math.round(clientRect.height * scale || (clientRect.bottom - clientRect.top) * scale);
 
         return bounds;
-
     }
 };
 
@@ -1083,7 +1082,7 @@ _html2canvas.Parse = function ( images, options ) {
                         }
 
                         if (range.getBoundingClientRect()) {
-                            bounds = range.getBoundingClientRect();
+                            bounds = _html2canvas.Util.Bounds(range, options.scale);
                         }else{
                             bounds = {};
                         }
@@ -1106,7 +1105,7 @@ _html2canvas.Parse = function ( images, options ) {
                     wrapElement.appendChild(oldTextNode.cloneNode(true));
                     parent.replaceChild(wrapElement, oldTextNode);
 
-                    bounds = _html2canvas.Util.Bounds(wrapElement);
+                    bounds = _html2canvas.Util.Bounds(wrapElement, options.scale);
 
                     textValue = oldTextNode.nodeValue;
 
@@ -1117,7 +1116,7 @@ _html2canvas.Parse = function ( images, options ) {
                 }
 
                 if (textValue !== null){
-                    if (options.simplifyText) {
+                    if (options.simplifyText || (options.scale && options.scale !== 1)) {
                         renderRect(ctx, bounds.left, bounds.top + 2, bounds.width + 5, bounds.height - 2, color);
                     } else {
                         drawText(textValue, bounds.left, bounds.bottom, ctx);    
@@ -1172,7 +1171,7 @@ _html2canvas.Parse = function ( images, options ) {
         element.insertBefore(boundElement, element.firstChild);
 
 
-        bounds = _html2canvas.Util.Bounds( boundElement );
+        bounds = _html2canvas.Util.Bounds( boundElement, options.scale );
         element.removeChild( boundElement );
         element.style.listStyleType = type;
         return bounds;
@@ -1734,7 +1733,7 @@ _html2canvas.Parse = function ( images, options ) {
 
     function renderElement(el, parentStack){
 
-        var bounds = _html2canvas.Util.Bounds(el),
+        var bounds = _html2canvas.Util.Bounds(el, options.scale),
         x = bounds.left,
         y = bounds.top,
         w = bounds.width,
@@ -2225,7 +2224,7 @@ _html2canvas.Preload = function( options ) {
 
                 if (/^(-webkit|-o|-moz|-ms|linear)-/.test( background_image )) {
 
-                    img = _html2canvas.Generate.Gradient( background_image, _html2canvas.Util.Bounds( el ) );
+                    img = _html2canvas.Generate.Gradient( background_image, _html2canvas.Util.Bounds( el, options.scale ) );
 
                     if ( img !== undefined ){
                         images[background_image] = {
@@ -2841,23 +2840,22 @@ _html2canvas.Renderer.Canvas = function( options ) {
             if (queueLen === 1) {
                 if (typeof options.elements[ 0 ] === "object" && options.elements[ 0 ].nodeName !== "BODY" && usingFlashcanvas === false) {
                     // crop image to the bounds of selected (single) element
-                    bounds = _html2canvas.Util.Bounds( options.elements[ 0 ] );
+                    bounds = _html2canvas.Util.Bounds( options.elements[ 0 ], options.scale );
                     newCanvas = doc.createElement('canvas');
                     newCanvas.width = bounds.width;
                     newCanvas.height = bounds.height;
                     ctx = newCanvas.getContext("2d");
 
-                    // If the image is too large, draw it in multiple passes
                     if (bounds.height < 1600) {
-                        ctx.drawImage( canvas, bounds.left, bounds.top, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height );
+                        ctx.drawImage( canvas, bounds.left, 0, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height);
                     } else {
+                    // If the image is too large, draw it in multiple passes
                         var passes = Math.ceil(bounds.height / 1600);
                         for (var i = 0; i < passes; i++) {
                             var h = (i < passes - 1) ? 1600 : (bounds.height - i * 1600);
-                            ctx.drawImage( canvas, bounds.left, bounds.top + i*1600, bounds.width, h, 0, bounds.top + i*1600, bounds.width, h );
+                            ctx.drawImage( canvas, bounds.left, i*1600, bounds.width, h, 0, i*1600, bounds.width, h);
                         }
                     }
-                    
                     canvas = null;
                     return newCanvas;
                 }
