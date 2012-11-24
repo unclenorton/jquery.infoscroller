@@ -3,6 +3,10 @@ body {
 	font: 87.45%/1.4 "Helvetica Neue", Arial, sans-serif;
 }
 
+h3, h4 {
+	color: #c00;
+}
+
 .g-unselectable {
 	-ms-user-select: none;
 	-moz-user-select: none;
@@ -45,7 +49,7 @@ body {
 	position: relative;
 	width: 100%;
 	height: auto;
-	opacity: 0.25;
+	opacity: 0.5;
 }
 
 .scroller__canvas canvas{
