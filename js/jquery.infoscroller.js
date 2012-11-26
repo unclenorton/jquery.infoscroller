@@ -36,22 +36,23 @@
 		$.infoscroller.canvasHeight = $(this).outerHeight();
 		$.infoscroller.canvasWidth = $(this).outerWidth();
 
-		var	scaledCanvasHeight = Math.floor($.infoscroller.canvasHeight * (150 / $.infoscroller.canvasWidth)),
-			overflow = scaledCanvasHeight - $.infoscroller.wHeight,
-			ratio = scaledCanvasHeight / $.infoscroller.canvasHeight;
+		// Set initial dimensions
+		onResize();
 
-		$.infoscroller.ratio = ratio;
-		console.log($.infoscroller.canvasHeight);
-		// Ensure the positive overflow
-		$.infoscroller.overflow = (overflow > 0) ? overflow : 0;
+		if (typeof $.measurer !== 'undefined') {
+			$.measurer.bind(onResize);	
+		} else {
+			$(window).resize(onResize);
+		}
+		
 
 		this.each(function(i) {
 			html2canvas( [this], {
 				simplifyText : true,
 				allowTaint : false,
-				width : 150 / ratio, // Ratio matters when visualizing part of the page
-				height: scaledCanvasHeight,
-				scale : ratio,
+				width : 150 / $.infoscroller.ratio, // Ratio matters when visualizing part of the page
+				height: $.infoscroller.scaledHeight,
+				scale : $.infoscroller.ratio,
 				onrendered: function( canvas ) {
 
 					$('.scroller').addClass('loaded');
@@ -59,18 +60,31 @@
 					// IE fix
 					$(canvas).css({
 						width : 150,
-						height : scaledCanvasHeight
+						height : $.infoscroller.scaledHeight
 					});
 
 					$('.scroller__canvas').append($(canvas));
-					$('.scroller__handle')
-						.height($.infoscroller.wHeight * ratio)
-						.on('mousedown', startDrag);
+					$('.scroller__handle').on('mousedown', startDrag);
 
 					$(window).scroll(onScroll);
 				}
 			});
 		});
+
+		function onResize (e) {
+			$.infoscroller.wHeight = $(window).height();
+
+			var	scaledCanvasHeight = Math.floor($.infoscroller.canvasHeight * (150 / $.infoscroller.canvasWidth)),
+			overflow = scaledCanvasHeight - $.infoscroller.wHeight,
+			ratio = scaledCanvasHeight / $.infoscroller.canvasHeight;
+
+			$.infoscroller.scaledHeight = scaledCanvasHeight;
+			$.infoscroller.ratio = ratio;
+			// Ensure the positive overflow
+			$.infoscroller.overflow = (overflow > 0) ? overflow : 0;
+
+			$('.scroller__handle').height($.infoscroller.wHeight * ratio);
+		}
 
 		function setHandlePosition (percentage, scrollTop) {
 			var overflowOffset = $.infoscroller.overflow * percentage;
