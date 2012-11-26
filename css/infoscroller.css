@@ -41,7 +41,7 @@ h3, h4 {
 	background: transparent url('ajax-loader.gif') center center no-repeat scroll;
 }
 
-.scroller.loaded {
+.scroller_loaded {
 	background: none;
 }
 
