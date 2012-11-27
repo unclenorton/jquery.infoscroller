@@ -6,19 +6,34 @@
  *
  */
 
-(function($) {
+// the semi-colon before function invocation is a safety net against concatenated 
+// scripts and/or other plugins which may not be closed properly.
+
+;(function ( $, window, undefined ) {
 	"use strict";
 
-	$.infoscroller = $.infoscroller || {
-		version: '1.0'
-	};
+	// Create the defaults once
+	var pluginName = 'infoscroller',
+		document = window.document,
+		defaults = {
+			width : 150,
+			container : '.scroller',
+			canvas : '.scroller__canvas',
+			handle : '.scroller__handle',
+			unselectableClass : 'g-unselectable',
+			loadedClass : 'scroller_loaded'
+		};
 
-	//Default parameters
-	$.infoscroller.conf = {
+	// The actual plugin constructor
+	function Plugin( element, options ) {
+		this.element = element;
 
-	};
+		this.options = $.extend( {}, defaults, options) ;
 
-	$.infoscroller.isMobileBrowser = (navigator.userAgent.match(/Android/i) ||
+		this._defaults = defaults;
+		this._name = pluginName;
+
+		this._isMobileBrowser = (navigator.userAgent.match(/Android/i) ||
 			 navigator.userAgent.match(/webOS/i) ||
 			 navigator.userAgent.match(/iPhone/i) ||
 			 navigator.userAgent.match(/iPod/i) ||
@@ -26,97 +41,134 @@
 			 navigator.userAgent.match(/BlackBerry/)
 			 );
 
-	$.fn.infoscroller = function(conf) {
+		// Cache DOM objects
+		this.jContainer = $(this.options.container);
+		this.jCanvas = $(this.options.canvas);
+		this.jHandle = $(this.options.handle);
 
-		//Extend defaults
-		conf = $.extend($.infoscroller.conf, conf);
-		$.infoscroller.workingConf = conf;
+		// Define _self for global context
+		var _self = this;
 
-		$.infoscroller.wHeight = $(window).height();
-		$.infoscroller.canvasHeight = $(this).outerHeight();
-		$.infoscroller.canvasWidth = $(this).outerWidth();
+		// Private functions
+		function _onResize (e) {
+			_self.wHeight = $(window).height();
+			_self.canvasHeight = $(_self.element).outerHeight();
+			_self.canvasWidth = $(_self.element).outerWidth();
 
-		var	scaledCanvasHeight = Math.floor($.infoscroller.canvasHeight * (150 / $.infoscroller.canvasWidth)),
-			overflow = scaledCanvasHeight - $.infoscroller.wHeight,
-			ratio = scaledCanvasHeight / $.infoscroller.canvasHeight;
+			var	scaledCanvasHeight = Math.floor(_self.canvasHeight * (_self.options.width / _self.canvasWidth)),
+			overflow = scaledCanvasHeight - _self.wHeight,
+			ratio = scaledCanvasHeight / _self.canvasHeight;
 
-		$.infoscroller.ratio = ratio;
-		console.log($.infoscroller.canvasHeight);
-		// Ensure the positive overflow
-		$.infoscroller.overflow = (overflow > 0) ? overflow : 0;
+			_self.scaledHeight = scaledCanvasHeight;
+			_self.ratio = ratio;
+			// Ensure the positive overflow
+			_self.overflow = (overflow > 0) ? overflow : 0;
 
-		this.each(function(i) {
-			html2canvas( [this], {
-				simplifyText : true,
-				allowTaint : false,
-				width : 150 / ratio, // Ratio matters when visualizing part of the page
-				height: scaledCanvasHeight,
-				scale : ratio,
-				onrendered: function( canvas ) {
+			_self.jHandle.height(_self.wHeight * ratio);
+		}
 
-					$('.scroller').addClass('loaded');
+		function _setHandlePosition (percentage, scrollTop) {
+			var overflowOffset = _self.overflow * percentage;
 
-					// IE fix
-					$(canvas).css({
-						width : 150,
-						height : scaledCanvasHeight
-					});
-
-					$('.scroller__canvas').append($(canvas));
-					$('.scroller__handle')
-						.height($.infoscroller.wHeight * ratio)
-						.on('mousedown', startDrag);
-
-					$(window).scroll(onScroll);
-				}
-			});
-		});
-
-		function setHandlePosition (percentage, scrollTop) {
-			var overflowOffset = $.infoscroller.overflow * percentage;
-
-			$('.scroller__canvas').css({
+			_self.jCanvas.css({
 				'margin-top' : -overflowOffset
 			});
 
-			$('.scroller__handle').css({
-				top : scrollTop * $.infoscroller.ratio - overflowOffset
+			_self.jHandle.css({
+				top : scrollTop * _self.ratio - overflowOffset
 			});
 		}
 
-		function startDrag(e) {
-			$.infoscroller.startY = e.clientY;
-			$.infoscroller.handleStartY = $('.scroller__handle').position().top;
-			$('html').on('mousemove', onDrag)
-					.on('mouseup mouseleave', endDrag)
-					.addClass('g-unselectable');
+		function _startDrag(e) {
+			_self.startY = e.clientY;
+			_self.handleStartY = _self.jHandle.position().top;
+
+			$('html').on('mousemove', _onDrag)
+					.on('mouseup mouseleave', _endDrag)
+					.addClass(_self.options.unselectableClass);
 		}
 
-		function onDrag(e) {
+		function _onDrag(e) {
 			
 			// Get offset
-			var offset = e.clientY - $.infoscroller.startY,
-				handlePos = $.infoscroller.handleStartY + offset,
-				percentage = handlePos / ($.infoscroller.wHeight * (1 - $.infoscroller.ratio)),
-				overflowOffset = $.infoscroller.overflow * percentage;
+			var offset = e.clientY - _self.startY,
+				handlePos = _self.handleStartY + offset,
+				percentage = handlePos / (_self.wHeight * (1 - _self.ratio)),
+				overflowOffset = _self.overflow * percentage;
 
 			handlePos = (handlePos > 0) ? handlePos : 0;
 
-			$(window).scrollTop((handlePos + overflowOffset) / $.infoscroller.ratio);
+			$(window).scrollTop((handlePos + overflowOffset) / _self.ratio);
 		}
 
-		function onScroll(e) {
+		function _onScroll(e) {
 			// Get percentage
 			var st = $(this).scrollTop(),
-				percentage = st / ($.infoscroller.canvasHeight - $.infoscroller.wHeight);
-			setHandlePosition(percentage, st);
+				percentage = st / (_self.canvasHeight - _self.wHeight);
+
+			_setHandlePosition(percentage, st);
 		}
 
-		function endDrag() {
-			$('html').off('mousemove', onDrag).removeClass('g-unselectable');
+		function _endDrag() {
+			$('html').off('mousemove', _onDrag).removeClass(_self.options.unselectableClass);
 		}
 
-		return this;
-	};
 
-})(jQuery);
+		// Privileged functions 
+		this.init = function () {
+			if (!_self._isMobileBrowser) {
+				// Set initial dimensions
+				_onResize();
+
+				html2canvas( [_self.element], {
+					simplifyText : true,
+					allowTaint : false,
+					width : _self.options.width / _self.ratio, // Ratio matters when visualizing part of the page
+					height: _self.scaledHeight,
+					scale : _self.ratio,
+					onrendered: function( canvas ) {
+
+						_self.jContainer.addClass(_self.options.loadedClass);
+
+						// IE fix
+						$(canvas).css({
+							width : _self.options.width,
+							height : _self.scaledHeight
+						});
+
+						_self.jCanvas.append($(canvas));
+						_self.jHandle.on('mousedown', _startDrag);
+
+						$(window).scroll(_onScroll);
+					}
+				});
+			} else {
+				console.log('Mobile devices not supported.');
+			}
+		}
+
+		this.bind = function () {
+			if (typeof $.measurer !== 'undefined') {
+				$.measurer.bind(_onResize);	
+			} else {
+				$(window).resize(_onResize);
+			}
+		}
+
+		// Initialization
+		this.bind();
+		this.init();
+	}
+
+	// A really lightweight plugin wrapper around the constructor, 
+	// preventing against multiple instantiations
+	
+	$.fn[pluginName] = function ( options ) {
+		return this.each(function () {
+		if (!$.data(this, 'plugin_' + pluginName)) {
+			$.data(this, 'plugin_' + pluginName, new Plugin( this, options ));
+		}
+		});
+	}
+
+}(jQuery, window));
