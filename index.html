@@ -19,7 +19,10 @@
 		<script type="text/javascript" src="js/jquery.infoscroller.js"></script>
 		
 		<script type="text/javascript">
-			$(function () {
+			// Make sure you specify the actual image sizes if you want to trigger the initialization
+			// on documentReady event. Otherwise Webkit-based browsers will get a wrong height.
+			
+			$(window).load(function () {
 				$('.text').infoscroller();	
 			});
 		</script>
