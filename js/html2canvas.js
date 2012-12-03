@@ -2851,9 +2851,9 @@ _html2canvas.Renderer.Canvas = function( options ) {
                     } else {
                     // If the image is too large, draw it in multiple passes
                         var passes = Math.ceil(bounds.height / 1600);
-                        for (var i = 0; i < passes; i++) {
-                            var h = (i < passes - 1) ? 1600 : (bounds.height - i * 1600);
-                            ctx.drawImage( canvas, bounds.left, i*1600, bounds.width, h, 0, i*1600, bounds.width, h);
+                        for (var j = 0; j < passes ; j++) {
+                            var h = (j < passes - 1) ? 1600 : (bounds.height - j * 1600);
+                            ctx.drawImage( canvas, bounds.left, j * 1600, bounds.width, h, 0, j * 1600, bounds.width, h);
                         }
                     }
                     canvas = null;
