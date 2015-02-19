@@ -5,3 +5,7 @@ A Sublime Text 2 - style page scrollbar with minimap. Uses the awesome html2canv
 # License
 
 This plugin is released under MIT license and distributed *'as is'*, without any warranty, explicit or implied.
+
+# Demo
+
+http://unclenorton.github.com/jquery.infoscroller/
