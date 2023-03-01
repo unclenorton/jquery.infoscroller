@@ -8,4 +8,4 @@ This plugin is released under MIT license and distributed *'as is'*, without any
 
 # Demo
 
-http://unclenorton.github.com/jquery.infoscroller/
+https://unclenorton.github.io/jquery.infoscroller/
